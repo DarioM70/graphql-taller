@@ -1,11 +1,11 @@
 {
   "info": {
-    "name": "GraphQL Taller API",
-    "description": "Colección Postman para la API GraphQL (usuarios, proyectos, tareas, comentarios). El request 'Login' o 'Register' guarda el token automáticamente en la variable {{token}} usada por el resto de requests.",
+    "name": "GraphQL Taller API (NestJS)",
+    "description": "Colección Postman para la API GraphQL (NestJS + TypeORM): usuarios, proyectos, tareas y comentarios. El request 'Signup' o 'Login' guarda el token en {{token}} y el resto lo reutiliza. Endpoint GraphQL: {{baseUrl}} (por defecto local http://localhost:9000/graphql; use el environment de producción para Railway).",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
-    { "key": "baseUrl", "value": "http://localhost:4000/graphql" },
+    { "key": "baseUrl", "value": "http://localhost:9000/graphql" },
     { "key": "token", "value": "" },
     { "key": "projectId", "value": "" },
     { "key": "taskId", "value": "" },
@@ -17,16 +17,16 @@
       "name": "Auth",
       "item": [
         {
-          "name": "Register (first user = SUPERADMIN)",
+          "name": "Signup (first user = superadmin)",
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
                   "const r = pm.response.json();",
-                  "if (r.data && r.data.register) {",
-                  "  pm.collectionVariables.set('token', r.data.register.token);",
-                  "  pm.collectionVariables.set('userId', r.data.register.user.id);",
+                  "if (r.data && r.data.signup) {",
+                  "  pm.collectionVariables.set('token', r.data.signup.token);",
+                  "  pm.collectionVariables.set('userId', r.data.signup.user.id);",
                   "}"
                 ],
                 "type": "text/javascript"
@@ -39,7 +39,7 @@
             "url": "{{baseUrl}}",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"query\": \"mutation Register($input: RegisterInput!) { register(input: $input) { token user { id name email role } } }\",\n  \"variables\": { \"input\": { \"name\": \"Super Admin\", \"email\": \"admin@taller.com\", \"password\": \"Admin123*\" } }\n}"
+              "raw": "{\n  \"query\": \"mutation Signup($input: SignupInput!) { signup(input: $input) { token user { id fullName email roles } } }\",\n  \"variables\": { \"input\": { \"fullName\": \"Super Admin\", \"email\": \"admin@taller.com\", \"password\": \"Admin123*\" } }\n}"
             }
           }
         },
@@ -66,7 +66,7 @@
             "url": "{{baseUrl}}",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"query\": \"mutation Login($input: LoginInput!) { login(input: $input) { token user { id email role } } }\",\n  \"variables\": { \"input\": { \"email\": \"admin@taller.com\", \"password\": \"Admin123*\" } }\n}"
+              "raw": "{\n  \"query\": \"mutation Login($input: LoginInput!) { login(input: $input) { token user { id email roles } } }\",\n  \"variables\": { \"input\": { \"email\": \"admin@taller.com\", \"password\": \"Admin123*\" } }\n}"
             }
           }
         },
@@ -79,7 +79,7 @@
               { "key": "Authorization", "value": "Bearer {{token}}" }
             ],
             "url": "{{baseUrl}}",
-            "body": { "mode": "raw", "raw": "{\n  \"query\": \"{ me { id name email role } }\"\n}" }
+            "body": { "mode": "raw", "raw": "{\n  \"query\": \"{ me { id fullName email roles isActive } }\"\n}" }
           }
         }
       ]
@@ -96,7 +96,7 @@
               { "key": "Authorization", "value": "Bearer {{token}}" }
             ],
             "url": "{{baseUrl}}",
-            "body": { "mode": "raw", "raw": "{\n  \"query\": \"{ users { id name email role } }\"\n}" }
+            "body": { "mode": "raw", "raw": "{\n  \"query\": \"{ users { id fullName email roles } }\"\n}" }
           }
         },
         {
@@ -122,7 +122,7 @@
             "url": "{{baseUrl}}",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"query\": \"mutation($input: CreateUserInput!) { createUser(input: $input) { id email role } }\",\n  \"variables\": { \"input\": { \"name\": \"Regular User\", \"email\": \"user1@taller.com\", \"password\": \"User123*\", \"role\": \"USER\" } }\n}"
+              "raw": "{\n  \"query\": \"mutation($input: CreateUserInput!) { createUser(input: $input) { id fullName email roles } }\",\n  \"variables\": { \"input\": { \"fullName\": \"Regular User\", \"email\": \"user1@taller.com\", \"password\": \"User123*\", \"roles\": [\"user\"] } }\n}"
             }
           }
         },
@@ -137,7 +137,7 @@
             "url": "{{baseUrl}}",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"query\": \"mutation($id: ID!, $input: UpdateUserInput!) { updateUser(id: $id, input: $input) { id name role } }\",\n  \"variables\": { \"id\": \"{{userId}}\", \"input\": { \"name\": \"Updated Name\" } }\n}"
+              "raw": "{\n  \"query\": \"mutation($id: ID!, $input: UpdateUserInput!) { updateUser(id: $id, input: $input) { id fullName roles } }\",\n  \"variables\": { \"id\": \"{{userId}}\", \"input\": { \"fullName\": \"Updated Name\" } }\n}"
             }
           }
         },
@@ -184,12 +184,12 @@
             "url": "{{baseUrl}}",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"query\": \"mutation($input: CreateProjectInput!) { createProject(input: $input) { id name description owner { email } } }\",\n  \"variables\": { \"input\": { \"name\": \"My Project\", \"description\": \"Demo project\" } }\n}"
+              "raw": "{\n  \"query\": \"mutation($input: CreateProjectInput!) { createProject(input: $input) { id name description owner { email roles } } }\",\n  \"variables\": { \"input\": { \"name\": \"My Project\", \"description\": \"Demo project\" } }\n}"
             }
           }
         },
         {
-          "name": "List projects",
+          "name": "List projects (nested)",
           "request": {
             "method": "POST",
             "header": [

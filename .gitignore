@@ -1,9 +1,15 @@
 node_modules/
 dist/
 *.log
+
+# Env
 .env
 .env.local
-prisma/*.db
-prisma/*.db-journal
+
+# Code-first GraphQL schema is generated at runtime
+src/schema.gql
+
+# Tests / coverage
 coverage/
+
 .DS_Store

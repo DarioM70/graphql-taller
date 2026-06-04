@@ -1,41 +1,41 @@
-# Operaciones de ejemplo para Apollo Sandbox (http://localhost:4000/graphql).
-# Recuerde agregar el header HTTP en Sandbox luego de hacer login:
+# Operaciones de ejemplo para el Apollo Sandbox (endpoint /graphql).
+# Tras hacer login, agregue el header HTTP en el Sandbox:
 #   { "Authorization": "Bearer <token>" }
 
 # ---------- AUTH ----------
-mutation Register {
-  register(input: { name: "Ada Lovelace", email: "ada@taller.com", password: "Secret123*" }) {
+mutation Signup {
+  signup(input: { fullName: "Ada Lovelace", email: "ada@taller.com", password: "Secret123*" }) {
     token
-    user { id name email role }
+    user { id fullName email roles }
   }
 }
 
 mutation Login {
   login(input: { email: "admin@taller.com", password: "Admin123*" }) {
     token
-    user { id email role }
+    user { id email roles }
   }
 }
 
 query Me {
-  me { id name email role }
+  me { id fullName email roles isActive }
 }
 
 # ---------- USERS (superadmin) ----------
 query Users {
-  users { id name email role }
+  users { id fullName email roles }
 }
 
 mutation CreateUser {
-  createUser(input: { name: "Regular", email: "regular@taller.com", password: "User123*", role: USER }) {
-    id email role
+  createUser(input: { fullName: "Regular", email: "regular@taller.com", password: "User123*", roles: ["user"] }) {
+    id email roles
   }
 }
 
 # ---------- PROJECTS ----------
 mutation CreateProject {
   createProject(input: { name: "Plataforma X", description: "Proyecto demo" }) {
-    id name owner { email }
+    id name owner { email roles }
   }
 }
 

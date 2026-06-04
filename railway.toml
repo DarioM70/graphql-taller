@@ -1,13 +1,13 @@
-# Railway configuration. Builds the image from the Dockerfile and runs a
-# health check against /health. SQLite data is persisted on a mounted volume
-# (DATABASE_URL points to a path under the mount, e.g. file:/app/data/prod.db).
+# Railway configuration. Builds from the Dockerfile (NestJS) and health-checks
+# the REST liveness route at /api/health. DATABASE_URL references the managed
+# Postgres service via ${{Postgres.DATABASE_URL}} (private network).
 
 [build]
 builder = "dockerfile"
 dockerfilePath = "Dockerfile"
 
 [deploy]
-healthcheckPath = "/health"
+healthcheckPath = "/api/health"
 healthcheckTimeout = 100
 restartPolicyType = "on_failure"
 restartPolicyMaxRetries = 3

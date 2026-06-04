@@ -1,10 +1,8 @@
 name: CI
 
-# Continuous Integration: install, build and run the full test suite on every
-# push and PR. Continuous Deployment is handled by Railway's native GitHub
-# integration (Service → Settings → Source → Connect Repo): once connected,
-# Railway builds the Dockerfile and redeploys automatically on every push to
-# `main`. This workflow acts as the quality gate before that deploy.
+# Continuous Integration: install, build (nest build) and run the e2e test suite
+# against a disposable PostgreSQL service. Continuous Deployment is handled by
+# Railway's native GitHub integration (redeploys on push to main).
 
 on:
   push:
@@ -32,7 +30,7 @@ jobs:
           --health-retries 10
     env:
       NODE_ENV: test
-      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/graphql_taller_test?schema=public
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/graphql_taller_test
       JWT_SECRET: ci_test_secret
     steps:
       - uses: actions/checkout@v4
@@ -45,11 +43,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Generate Prisma client
-        run: npx prisma generate
-
-      - name: Type-check & build
+      - name: Build (nest build)
         run: npm run build
 
-      - name: Run tests (Jest + Supertest)
-        run: npm test
+      - name: Run e2e tests (Jest + Supertest)
+        run: npm run test:e2e

@@ -1,0 +1,13 @@
+# Railway configuration. Builds the image from the Dockerfile and runs a
+# health check against /health. SQLite data is persisted on a mounted volume
+# (DATABASE_URL points to a path under the mount, e.g. file:/app/data/prod.db).
+
+[build]
+builder = "dockerfile"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+healthcheckPath = "/health"
+healthcheckTimeout = 100
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 3

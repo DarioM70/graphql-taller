@@ -26,7 +26,7 @@ import { HealthController } from './health.controller';
       sortSchema: true,
       introspection: true,
       playground: false,
-      plugins: [ApolloServerPluginLandingPageLocalDefault()],
+      plugins: [ApolloServerPluginLandingPageLocalDefault()] as ApolloDriverConfig['plugins'],
       context: ({ req }: { req: Request }) => ({ req }),
       // Normalize errors: derive a stable extensions.code from the original HTTP
       // status (NestJS only maps some exceptions by default), surface validation

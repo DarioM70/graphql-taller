@@ -101,6 +101,18 @@
         },
         {
           "name": "Create user (superadmin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const r = pm.response.json();",
+                  "if (r.data && r.data.createUser) pm.collectionVariables.set('userId', r.data.createUser.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [
@@ -200,21 +212,6 @@
             "body": {
               "mode": "raw",
               "raw": "{\n  \"query\": \"mutation($id: ID!, $input: UpdateProjectInput!) { updateProject(id: $id, input: $input) { id name description } }\",\n  \"variables\": { \"id\": \"{{projectId}}\", \"input\": { \"name\": \"Renamed Project\" } }\n}"
-            }
-          }
-        },
-        {
-          "name": "Delete project",
-          "request": {
-            "method": "POST",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{token}}" }
-            ],
-            "url": "{{baseUrl}}",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"query\": \"mutation($id: ID!) { deleteProject(id: $id) }\",\n  \"variables\": { \"id\": \"{{projectId}}\" }\n}"
             }
           }
         }
@@ -369,6 +366,26 @@
             "body": {
               "mode": "raw",
               "raw": "{\n  \"query\": \"mutation($id: ID!) { deleteComment(id: $id) }\",\n  \"variables\": { \"id\": \"{{commentId}}\" }\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Cleanup",
+      "item": [
+        {
+          "name": "Delete project",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{baseUrl}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"mutation($id: ID!) { deleteProject(id: $id) }\",\n  \"variables\": { \"id\": \"{{projectId}}\" }\n}"
             }
           }
         }

@@ -281,12 +281,29 @@ npm test
 - Cubren autenticación, roles, CRUD de las cuatro entidades, validaciones y
   todos los códigos de error.
 
-### Postman
+### Postman / Newman
 
 Importe `postman/graphql-taller.postman_collection.json`. El request **Login**
 (o **Register**) guarda el token en la variable `{{token}}` y el resto de
-requests lo reutiliza automáticamente. La variable `baseUrl` apunta por defecto
-a `http://localhost:4000/graphql` (cámbiela por la URL de producción).
+requests lo reutiliza automáticamente, encadenando `projectId`, `taskId`, etc.
+
+- **Local:** la variable `baseUrl` apunta por defecto a `http://localhost:4000/graphql`.
+- **Producción:** use el environment `postman/production.postman_environment.json`.
+
+Ejecución por línea de comandos con **Newman** (runner CLI de Postman):
+
+```bash
+# Contra producción (Railway) — 19 requests, 0 errores
+npx newman run postman/graphql-taller.postman_collection.json \
+  -e postman/production.postman_environment.json
+
+# Contra local (requiere npm run dev en otra terminal)
+npx newman run postman/graphql-taller.postman_collection.json
+```
+
+> La colección corre de principio a fin sobre una base limpia: registra el
+> superadmin, ejerce todo el CRUD de las cuatro entidades y deja la base
+> limpia (folder **Cleanup**).
 
 ---
 

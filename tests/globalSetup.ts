@@ -6,7 +6,9 @@ import { execSync } from 'child_process';
  */
 export default async function globalSetup() {
   process.env.NODE_ENV = 'test';
-  process.env.DATABASE_URL = process.env.DATABASE_URL || 'file:./test.db';
+  process.env.DATABASE_URL =
+    process.env.DATABASE_URL ||
+    'postgresql://postgres:postgres@localhost:5432/graphql_taller_test?schema=public';
   process.env.JWT_SECRET = process.env.JWT_SECRET || 'test_secret';
 
   execSync('npx prisma db push --skip-generate --force-reset', {

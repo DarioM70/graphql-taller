@@ -11,7 +11,7 @@
     "prisma:migrate": "prisma migrate dev",
     "db:push": "prisma db push",
     "seed": "tsx prisma/seed.ts",
-    "test": "cross-env NODE_ENV=test DATABASE_URL=file:./test.db jest --runInBand --detectOpenHandles --forceExit",
+    "test": "cross-env NODE_ENV=test DATABASE_URL=postgresql://postgres:postgres@localhost:5432/graphql_taller_test?schema=public jest --runInBand --detectOpenHandles --forceExit",
     "postinstall": "prisma generate"
   },
   "keywords": ["graphql", "apollo", "typescript", "prisma", "jwt"],

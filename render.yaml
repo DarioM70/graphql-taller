@@ -1,7 +1,10 @@
-# Render.com Blueprint. Deploy with: New + > Blueprint > point at this repo.
-# Uses the Dockerfile. For durable data across deploys, attach a Postgres
-# instance and set DATABASE_URL to its connection string (and switch the
-# provider in prisma/schema.prisma to "postgresql").
+# Render.com Blueprint (alternative to Railway). Deploy with:
+#   New + > Blueprint > point at this repo.
+# Provisions a managed PostgreSQL and a Dockerfile-based web service wired to it.
+databases:
+  - name: graphql-taller-db
+    plan: free
+
 services:
   - type: web
     name: graphql-taller
@@ -19,4 +22,6 @@ services:
       - key: JWT_EXPIRES_IN
         value: 1d
       - key: DATABASE_URL
-        value: file:./prod.db
+        fromDatabase:
+          name: graphql-taller-db
+          property: connectionString

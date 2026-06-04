@@ -1,28 +1,34 @@
 // Prisma schema for the GraphQL Taller API.
-// Provider is SQLite for zero-config local dev and tests. To deploy on a
-// managed Postgres (Render/Railway/Neon) change provider to "postgresql"
-// and set DATABASE_URL to the connection string.
+// Database: PostgreSQL (managed on Railway in production; local dev/CI via the
+// Postgres service in docker-compose.yml / GitHub Actions). Set DATABASE_URL to
+// the connection string.
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-// NOTE: SQLite does not support native enums. Roles and task statuses are
-// stored as strings; valid values are enforced by the GraphQL enums (Role,
-// TaskStatus) and the Zod validation layer. Switching to Postgres later only
-// requires changing these back to enums.
+enum Role {
+  SUPERADMIN
+  USER
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+}
 
 model User {
   id        String   @id @default(cuid())
   name      String
   email     String   @unique
   password  String
-  role      String   @default("USER")
+  role      Role     @default(USER)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -46,11 +52,11 @@ model Project {
 }
 
 model Task {
-  id        String   @id @default(cuid())
+  id        String     @id @default(cuid())
   title     String
-  status    String   @default("TODO")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  status    TaskStatus @default(TODO)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
 
   projectId String
   project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)

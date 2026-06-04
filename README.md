@@ -24,13 +24,14 @@ El primer usuario que se registre en producción se convierte en `SUPERADMIN`.
 | Lenguaje          | TypeScript                          |
 | Servidor HTTP     | Express 4                           |
 | GraphQL           | Apollo Server 4 (`@apollo/server`)  |
-| ORM / Base de datos | Prisma + SQLite (dev) / Postgres (prod opcional) |
+| ORM / Base de datos | Prisma + **PostgreSQL**            |
 | Autenticación     | JWT (`jsonwebtoken`) + `bcryptjs`   |
 | Validación        | Zod                                 |
 | Pruebas           | Jest + Supertest                    |
 
-La base de datos por defecto es **SQLite** (cero configuración). Para producción
-se puede apuntar `DATABASE_URL` a un Postgres administrado (ver sección 8).
+La base de datos es **PostgreSQL** en todos los entornos. Para desarrollo y
+pruebas se levanta con Docker (`docker compose up -d db`); en producción se usa
+el **Postgres administrado de Railway** (ver sección 8).
 
 ---
 
@@ -54,6 +55,7 @@ User 1 ──< Project 1 ──< Task
 
 - Node.js 18+ (probado con Node 22/26)
 - npm
+- Docker (para la base PostgreSQL local; o un Postgres propio)
 
 ---
 
@@ -66,13 +68,16 @@ npm install
 # 2. Crear el archivo de entorno
 cp .env.example .env
 
-# 3. Crear la base de datos a partir del esquema Prisma
+# 3. Levantar PostgreSQL local (crea las BD `graphql_taller` y `..._test`)
+docker compose up -d db
+
+# 4. Crear las tablas a partir del esquema Prisma
 npm run db:push
 
-# 4. (Opcional) Cargar datos de ejemplo + superadmin inicial
+# 5. (Opcional) Cargar datos de ejemplo + superadmin inicial
 npm run seed
 
-# 5. Levantar el servidor en modo desarrollo (hot reload)
+# 6. Levantar el servidor en modo desarrollo (hot reload)
 npm run dev
 ```
 
@@ -232,10 +237,10 @@ https://graphql-taller-production.up.railway.app/graphql
 
 ### Cómo se desplegó
 
+- **PostgreSQL administrado de Railway** (servicio `Postgres` del proyecto).
 - Imagen construida desde el `Dockerfile` (config en `railway.toml`).
-- Variables de entorno en Railway: `NODE_ENV`, `JWT_SECRET`, `JWT_EXPIRES_IN`,
-  `DATABASE_URL=file:/app/data/prod.db`.
-- Volumen montado en `/app/data` para persistir la base SQLite entre despliegues.
+- Variables de entorno en Railway: `NODE_ENV`, `JWT_SECRET`, `JWT_EXPIRES_IN` y
+  `DATABASE_URL` (referencia a `${{Postgres.DATABASE_URL}}`, red privada interna).
 - Comando de arranque (en el `Dockerfile`): `prisma db push` + `node dist/src/index.js`.
 
 Para volver a desplegar manualmente desde la máquina local:
@@ -256,17 +261,18 @@ railway up --service graphql-taller
 
 ### Despliegue alternativo (Render / Docker local)
 
-También se incluye `render.yaml` (Render Blueprint) y el `Dockerfile` corre en
-cualquier entorno:
+También se incluye `render.yaml` (Render Blueprint) que provisiona un Postgres
+administrado y conecta el servicio web. El `Dockerfile` corre en cualquier
+entorno apuntando `DATABASE_URL` a un Postgres accesible:
 
 ```bash
+docker compose up -d db   # Postgres local
 docker build -t graphql-taller .
-docker run -p 4000:4000 -e JWT_SECRET=cambia_esto graphql-taller
+docker run -p 4000:4000 \
+  -e JWT_SECRET=cambia_esto \
+  -e DATABASE_URL="postgresql://postgres:postgres@host.docker.internal:5432/graphql_taller" \
+  graphql-taller
 ```
-
-> Con SQLite, para datos persistentes se usa un volumen (como en Railway) o se
-> migra a **Postgres**: cambie `provider` a `postgresql` en
-> `prisma/schema.prisma` y apunte `DATABASE_URL` a la base administrada.
 
 ---
 
@@ -277,7 +283,8 @@ npm test
 ```
 
 - **39 pruebas** con **Jest + Supertest** que ejercitan el endpoint GraphQL
-  real (HTTP) sobre una base SQLite de pruebas aislada (`prisma/test.db`).
+  real (HTTP) sobre una base PostgreSQL de pruebas aislada (`graphql_taller_test`).
+- Requieren el Postgres local: `docker compose up -d db` antes de `npm test`.
 - Cubren autenticación, roles, CRUD de las cuatro entidades, validaciones y
   todos los códigos de error.
 
@@ -322,21 +329,21 @@ src/
 prisma/
   schema.prisma        # Modelo de datos
   seed.ts              # Datos iniciales
-tests/                 # Suite Jest + Supertest
-postman/               # Colección Postman
-Dockerfile, render.yaml
+tests/                 # Suite Jest + Supertest (Postgres)
+postman/               # Colección Postman + environment de producción
+docker-compose.yml     # PostgreSQL local (dev + tests)
+Dockerfile, railway.toml, render.yaml
 ```
 
 ---
 
 ## 11. Funcionalidades no desarrolladas / dificultades
 
-- **Enums en SQLite:** Prisma no soporta enums nativos con SQLite, por lo que
-  `role` y `status` se almacenan como `String`; los valores válidos se
-  garantizan en la capa GraphQL (enums `Role`/`TaskStatus`) y con Zod. Migrar a
-  Postgres permite volver a enums nativos sin tocar la API.
-- **Persistencia en la nube:** con SQLite los datos son efímeros entre
-  despliegues en planes gratuitos; se documenta la ruta a Postgres.
+- **Base de datos:** el proyecto usa **PostgreSQL** en todos los entornos
+  (Railway administrado en producción; Docker en local/CI), con enums nativos
+  `Role` y `TaskStatus`. Inicialmente se prototipó con SQLite por su cero
+  configuración, pero se migró a Postgres para una persistencia nativa en la
+  nube y un entorno más cercano a producción.
 - **Reacciones:** el enunciado las menciona de forma opcional; no se implementó
   un módulo de reacciones independiente (los comentarios cubren la interacción
   social requerida). Es una extensión natural siguiendo el patrón de `Comment`.

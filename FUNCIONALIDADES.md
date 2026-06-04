@@ -34,8 +34,8 @@ implementación en el código. Sirve como guía de revisión.
 
 ## Cómo verificar rápidamente
 
-1. `npm install && cp .env.example .env && npm run db:push && npm run seed`
-2. `npm test` → 39 pruebas en verde.
+1. `npm install && cp .env.example .env && docker compose up -d db && npm run db:push && npm run seed`
+2. `npm test` → 39 pruebas en verde (PostgreSQL de pruebas).
 3. `npm run dev` y abrir `http://localhost:4000/graphql` (Apollo Sandbox).
 4. Pegar las operaciones de `operations.graphql` o importar la colección Postman.
 

@@ -1,9 +1,10 @@
-name: CI/CD
+name: CI
 
-# CI runs on every push and PR: install, build and run the full test suite.
-# CD: the `deploy` job ships to Railway on pushes to `main` when a RAILWAY_TOKEN
-# secret is present. (Railway's GitHub integration can also auto-deploy on push;
-# this job makes the CD step explicit in the pipeline.)
+# Continuous Integration: install, build and run the full test suite on every
+# push and PR. Continuous Deployment is handled by Railway's native GitHub
+# integration (Service → Settings → Source → Connect Repo): once connected,
+# Railway builds the Dockerfile and redeploys automatically on every push to
+# `main`. This workflow acts as the quality gate before that deploy.
 
 on:
   push:
@@ -38,25 +39,3 @@ jobs:
 
       - name: Run tests (Jest + Supertest)
         run: npm test
-
-  deploy:
-    name: Deploy to Railway
-    needs: test
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install Railway CLI
-        run: npm i -g @railway/cli
-
-      - name: Deploy
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-        run: |
-          if [ -z "$RAILWAY_TOKEN" ]; then
-            echo "RAILWAY_TOKEN not set — skipping CLI deploy."
-            echo "Railway's GitHub integration handles auto-deploy on push instead."
-            exit 0
-          fi
-          railway up --ci --service graphql-taller

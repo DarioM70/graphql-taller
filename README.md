@@ -244,26 +244,15 @@ Para volver a desplegar manualmente desde la máquina local:
 railway up --service graphql-taller
 ```
 
-### CI/CD (GitHub Actions)
+### CI/CD
 
-El flujo está en `.github/workflows/ci.yml`:
-
-- **CI** (cada push y PR): instala dependencias, compila TypeScript y corre las
-  39 pruebas. Bloquea el despliegue si algo falla.
-- **CD** (push a `main`): despliega a Railway con `railway up`.
-
-> El job de CD se activa cuando existe el secreto `RAILWAY_TOKEN`. Para
-> habilitar el auto-deploy, hay **una** de estas dos opciones (una sola vez):
->
-> **A) Token en GitHub Actions** — en Railway: *Project → Settings → Tokens*,
-> cree un token y luego:
-> ```bash
-> gh secret set RAILWAY_TOKEN --repo DarioM70/graphql-taller
-> ```
->
-> **B) Integración nativa de Railway** — en el dashboard de Railway conecte el
-> servicio al repo de GitHub (*Settings → Source → Connect Repo*). Railway
-> redesplegará automáticamente en cada push a `main`, sin tokens.
+- **CI — GitHub Actions** (`.github/workflows/ci.yml`): en cada push y PR
+  instala dependencias, compila TypeScript y corre las 39 pruebas. Actúa como
+  *quality gate*.
+- **CD — Railway (integración nativa de GitHub):** al conectar el servicio al
+  repositorio (*Service → Settings → Source → Connect Repo*), Railway construye
+  el `Dockerfile` y **redespliega automáticamente en cada push a `main`**, sin
+  necesidad de tokens en GitHub.
 
 ### Despliegue alternativo (Render / Docker local)
 

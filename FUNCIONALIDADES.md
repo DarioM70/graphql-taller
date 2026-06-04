@@ -27,7 +27,7 @@ implementación en el código. Sirve como guía de revisión.
 | Manejo de Errores (10%)                     | ✅ | Códigos tipados — `src/utils/errors.ts`, `formatError` en `src/server.ts` |
 | Calidad del Código y TypeScript (10%)       | ✅ | `strict: true`, tipado fuerte, comentarios, módulos separados |
 | Funcionalidad y Validaciones (20%)          | ✅ | Validación con Zod — `src/utils/validation.ts` |
-| Despliegue (10%)                            | ✅ | `Dockerfile`, `render.yaml`, README §8 |
+| Despliegue (10%)                            | ✅ | **Live en Railway:** https://graphql-taller-production.up.railway.app/graphql · CI/CD en `.github/workflows/ci.yml` |
 | Pruebas Supertest + Postman (15%)           | ✅ | 39 tests (`tests/`) + colección (`postman/`) |
 | Seguridad en Auth/Authz (10%)               | ✅ | JWT + bcrypt + guards por rol y propiedad |
 | Documentación y Presentación (5%)           | ✅ | `README.md`, este archivo, `operations.graphql` |

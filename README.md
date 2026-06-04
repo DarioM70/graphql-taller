@@ -7,6 +7,14 @@ para la gestión de **usuarios, proyectos (Módulo 1), tareas (Módulo 2)** y
 
 > Computación en Internet III — Universidad Icesi.
 
+## 🌐 Despliegue en producción (Railway)
+
+- **API GraphQL:** https://graphql-taller-production.up.railway.app/graphql
+- **Health check:** https://graphql-taller-production.up.railway.app/health
+- **Repositorio:** https://github.com/DarioM70/graphql-taller
+
+El primer usuario que se registre en producción se convierte en `SUPERADMIN`.
+
 ---
 
 ## 1. Stack tecnológico
@@ -217,33 +225,59 @@ Ejemplo de error de validación:
 
 ---
 
-## 8. Despliegue en la nube
+## 8. Despliegue en la nube — Railway (activo)
 
-El proyecto está listo para desplegar (incluye `Dockerfile` y `render.yaml`).
+La aplicación **ya está desplegada en Railway**:
+https://graphql-taller-production.up.railway.app/graphql
 
-### Opción A — Render (Blueprint con Docker)
+### Cómo se desplegó
 
-1. Suba el repositorio a GitHub.
-2. En [Render](https://render.com): **New + → Blueprint** y seleccione el repo.
-   `render.yaml` configura un Web Service con el `Dockerfile`.
-3. `JWT_SECRET` se genera automáticamente.
+- Imagen construida desde el `Dockerfile` (config en `railway.toml`).
+- Variables de entorno en Railway: `NODE_ENV`, `JWT_SECRET`, `JWT_EXPIRES_IN`,
+  `DATABASE_URL=file:/app/data/prod.db`.
+- Volumen montado en `/app/data` para persistir la base SQLite entre despliegues.
+- Comando de arranque (en el `Dockerfile`): `prisma db push` + `node dist/src/index.js`.
 
-> Con SQLite los datos son efímeros entre despliegues. Para datos persistentes,
-> cree una base **Postgres**, ajuste `DATABASE_URL` y cambie en
-> `prisma/schema.prisma` el `provider` a `postgresql`.
+Para volver a desplegar manualmente desde la máquina local:
 
-### Opción B — Railway
+```bash
+railway up --service graphql-taller
+```
 
-1. **New Project → Deploy from GitHub repo**.
-2. Railway detecta el `Dockerfile`.
-3. Defina las variables `JWT_SECRET` y (opcional) `DATABASE_URL` de un Postgres.
+### CI/CD (GitHub Actions)
 
-### Opción C — Docker local
+El flujo está en `.github/workflows/ci.yml`:
+
+- **CI** (cada push y PR): instala dependencias, compila TypeScript y corre las
+  39 pruebas. Bloquea el despliegue si algo falla.
+- **CD** (push a `main`): despliega a Railway con `railway up`.
+
+> El job de CD se activa cuando existe el secreto `RAILWAY_TOKEN`. Para
+> habilitar el auto-deploy, hay **una** de estas dos opciones (una sola vez):
+>
+> **A) Token en GitHub Actions** — en Railway: *Project → Settings → Tokens*,
+> cree un token y luego:
+> ```bash
+> gh secret set RAILWAY_TOKEN --repo DarioM70/graphql-taller
+> ```
+>
+> **B) Integración nativa de Railway** — en el dashboard de Railway conecte el
+> servicio al repo de GitHub (*Settings → Source → Connect Repo*). Railway
+> redesplegará automáticamente en cada push a `main`, sin tokens.
+
+### Despliegue alternativo (Render / Docker local)
+
+También se incluye `render.yaml` (Render Blueprint) y el `Dockerfile` corre en
+cualquier entorno:
 
 ```bash
 docker build -t graphql-taller .
 docker run -p 4000:4000 -e JWT_SECRET=cambia_esto graphql-taller
 ```
+
+> Con SQLite, para datos persistentes se usa un volumen (como en Railway) o se
+> migra a **Postgres**: cambie `provider` a `postgresql` en
+> `prisma/schema.prisma` y apunte `DATABASE_URL` a la base administrada.
 
 ---
 

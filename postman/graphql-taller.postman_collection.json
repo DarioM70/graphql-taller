@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "GraphQL Taller API (NestJS)",
-    "description": "Colección Postman para la API GraphQL (NestJS + TypeORM): usuarios, proyectos, tareas y comentarios. El request 'Signup' o 'Login' guarda el token en {{token}} y el resto lo reutiliza. Endpoint GraphQL: {{baseUrl}} (por defecto local http://localhost:9000/graphql; use el environment de producción para Railway).",
+    "description": "Colección Postman para la API GraphQL (NestJS + TypeORM): usuarios, proyectos, tareas y comentarios. Usa el modo GraphQL nativo (query + variables). 'Signup' o 'Login' guardan el token en {{token}} y el resto lo reutiliza. Endpoint: {{baseUrl}} (local http://localhost:9000/graphql; use el environment de producción para Railway).",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -22,14 +22,14 @@
             {
               "listen": "test",
               "script": {
+                "type": "text/javascript",
                 "exec": [
                   "const r = pm.response.json();",
                   "if (r.data && r.data.signup) {",
                   "  pm.collectionVariables.set('token', r.data.signup.token);",
                   "  pm.collectionVariables.set('userId', r.data.signup.user.id);",
                   "}"
-                ],
-                "type": "text/javascript"
+                ]
               }
             }
           ],
@@ -38,8 +38,11 @@
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "url": "{{baseUrl}}",
             "body": {
-              "mode": "raw",
-              "raw": "{\n  \"query\": \"mutation Signup($input: SignupInput!) { signup(input: $input) { token user { id fullName email roles } } }\",\n  \"variables\": { \"input\": { \"fullName\": \"Super Admin\", \"email\": \"admin@taller.com\", \"password\": \"Admin123*\" } }\n}"
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation Signup($input: SignupInput!) {\n  signup(input: $input) {\n    token\n    user { id fullName email roles }\n  }\n}",
+                "variables": "{\n  \"input\": {\n    \"fullName\": \"Super Admin\",\n    \"email\": \"admin@taller.com\",\n    \"password\": \"Admin123*\"\n  }\n}"
+              }
             }
           }
         },
@@ -49,14 +52,14 @@
             {
               "listen": "test",
               "script": {
+                "type": "text/javascript",
                 "exec": [
                   "const r = pm.response.json();",
                   "if (r.data && r.data.login) {",
                   "  pm.collectionVariables.set('token', r.data.login.token);",
                   "  pm.collectionVariables.set('userId', r.data.login.user.id);",
                   "}"
-                ],
-                "type": "text/javascript"
+                ]
               }
             }
           ],
@@ -65,8 +68,11 @@
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "url": "{{baseUrl}}",
             "body": {
-              "mode": "raw",
-              "raw": "{\n  \"query\": \"mutation Login($input: LoginInput!) { login(input: $input) { token user { id email roles } } }\",\n  \"variables\": { \"input\": { \"email\": \"admin@taller.com\", \"password\": \"Admin123*\" } }\n}"
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation Login($input: LoginInput!) {\n  login(input: $input) {\n    token\n    user { id email roles }\n  }\n}",
+                "variables": "{\n  \"input\": {\n    \"email\": \"admin@taller.com\",\n    \"password\": \"Admin123*\"\n  }\n}"
+              }
             }
           }
         },
@@ -79,7 +85,13 @@
               { "key": "Authorization", "value": "Bearer {{token}}" }
             ],
             "url": "{{baseUrl}}",
-            "body": { "mode": "raw", "raw": "{\n  \"query\": \"{ me { id fullName email roles isActive } }\"\n}" }
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query Me {\n  me {\n    id\n    fullName\n    email\n    roles\n    isActive\n  }\n}",
+                "variables": ""
+              }
+            }
           }
         }
       ]
@@ -96,7 +108,13 @@
               { "key": "Authorization", "value": "Bearer {{token}}" }
             ],
             "url": "{{baseUrl}}",
-            "body": { "mode": "raw", "raw": "{\n  \"query\": \"{ users { id fullName email roles } }\"\n}" }
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query Users {\n  users {\n    id\n    fullName\n    email\n    roles\n  }\n}",
+                "variables": ""
+              }
+            }
           }
         },
         {
@@ -105,11 +123,11 @@
             {
               "listen": "test",
               "script": {
+                "type": "text/javascript",
                 "exec": [
                   "const r = pm.response.json();",
                   "if (r.data && r.data.createUser) pm.collectionVariables.set('userId', r.data.createUser.id);"
-                ],
-                "type": "text/javascript"
+                ]
               }
             }
           ],
@@ -121,8 +139,11 @@
             ],
             "url": "{{baseUrl}}",
             "body": {
-              "mode": "raw",
-              "raw": "{\n  \"query\": \"mutation($input: CreateUserInput!) { createUser(input: $input) { id fullName email roles } }\",\n  \"variables\": { \"input\": { \"fullName\": \"Regular User\", \"email\": \"user1@taller.com\", \"password\": \"User123*\", \"roles\": [\"user\"] } }\n}"
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation CreateUser($input: CreateUserInput!) {\n  createUser(input: $input) {\n    id\n    fullName\n    email\n    roles\n  }\n}",
+                "variables": "{\n  \"input\": {\n    \"fullName\": \"Regular User\",\n    \"email\": \"user1@taller.com\",\n    \"password\": \"User123*\",\n    \"roles\": [\"user\"]\n  }\n}"
+              }
             }
           }
         },
@@ -136,8 +157,11 @@
             ],
             "url": "{{baseUrl}}",
             "body": {
-              "mode": "raw",
-              "raw": "{\n  \"query\": \"mutation($id: ID!, $input: UpdateUserInput!) { updateUser(id: $id, input: $input) { id fullName roles } }\",\n  \"variables\": { \"id\": \"{{userId}}\", \"input\": { \"fullName\": \"Updated Name\" } }\n}"
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation UpdateUser($id: ID!, $input: UpdateUserInput!) {\n  updateUser(id: $id, input: $input) {\n    id\n    fullName\n    roles\n  }\n}",
+                "variables": "{\n  \"id\": \"{{userId}}\",\n  \"input\": { \"fullName\": \"Updated Name\" }\n}"
+              }
             }
           }
         },
@@ -151,8 +175,11 @@
             ],
             "url": "{{baseUrl}}",
             "body": {
-              "mode": "raw",
-              "raw": "{\n  \"query\": \"mutation($id: ID!) { deleteUser(id: $id) }\",\n  \"variables\": { \"id\": \"{{userId}}\" }\n}"
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation DeleteUser($id: ID!) {\n  deleteUser(id: $id)\n}",
+                "variables": "{\n  \"id\": \"{{userId}}\"\n}"
+              }
             }
           }
         }
@@ -167,11 +194,11 @@
             {
               "listen": "test",
               "script": {
+                "type": "text/javascript",
                 "exec": [
                   "const r = pm.response.json();",
                   "if (r.data && r.data.createProject) pm.collectionVariables.set('projectId', r.data.createProject.id);"
-                ],
-                "type": "text/javascript"
+                ]
               }
             }
           ],
@@ -183,8 +210,11 @@
             ],
             "url": "{{baseUrl}}",
             "body": {
-              "mode": "raw",
-              "raw": "{\n  \"query\": \"mutation($input: CreateProjectInput!) { createProject(input: $input) { id name description owner { email roles } } }\",\n  \"variables\": { \"input\": { \"name\": \"My Project\", \"description\": \"Demo project\" } }\n}"
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation CreateProject($input: CreateProjectInput!) {\n  createProject(input: $input) {\n    id\n    name\n    description\n    owner { email roles }\n  }\n}",
+                "variables": "{\n  \"input\": {\n    \"name\": \"My Project\",\n    \"description\": \"Demo project\"\n  }\n}"
+              }
             }
           }
         },
@@ -197,7 +227,13 @@
               { "key": "Authorization", "value": "Bearer {{token}}" }
             ],
             "url": "{{baseUrl}}",
-            "body": { "mode": "raw", "raw": "{\n  \"query\": \"{ projects { id name owner { email } tasks { title status } comments { content } } }\"\n}" }
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query Projects {\n  projects {\n    id\n    name\n    owner { email }\n    tasks { title status }\n    comments { content }\n  }\n}",
+                "variables": ""
+              }
+            }
           }
         },
         {
@@ -210,8 +246,11 @@
             ],
             "url": "{{baseUrl}}",
             "body": {
-              "mode": "raw",
-              "raw": "{\n  \"query\": \"mutation($id: ID!, $input: UpdateProjectInput!) { updateProject(id: $id, input: $input) { id name description } }\",\n  \"variables\": { \"id\": \"{{projectId}}\", \"input\": { \"name\": \"Renamed Project\" } }\n}"
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation UpdateProject($id: ID!, $input: UpdateProjectInput!) {\n  updateProject(id: $id, input: $input) {\n    id\n    name\n    description\n  }\n}",
+                "variables": "{\n  \"id\": \"{{projectId}}\",\n  \"input\": { \"name\": \"Renamed Project\" }\n}"
+              }
             }
           }
         }
@@ -226,11 +265,11 @@
             {
               "listen": "test",
               "script": {
+                "type": "text/javascript",
                 "exec": [
                   "const r = pm.response.json();",
                   "if (r.data && r.data.createTask) pm.collectionVariables.set('taskId', r.data.createTask.id);"
-                ],
-                "type": "text/javascript"
+                ]
               }
             }
           ],
@@ -242,8 +281,11 @@
             ],
             "url": "{{baseUrl}}",
             "body": {
-              "mode": "raw",
-              "raw": "{\n  \"query\": \"mutation($input: CreateTaskInput!) { createTask(input: $input) { id title status } }\",\n  \"variables\": { \"input\": { \"projectId\": \"{{projectId}}\", \"title\": \"Design schema\", \"status\": \"TODO\" } }\n}"
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation CreateTask($input: CreateTaskInput!) {\n  createTask(input: $input) {\n    id\n    title\n    status\n  }\n}",
+                "variables": "{\n  \"input\": {\n    \"projectId\": \"{{projectId}}\",\n    \"title\": \"Design schema\",\n    \"status\": \"TODO\"\n  }\n}"
+              }
             }
           }
         },
@@ -257,8 +299,11 @@
             ],
             "url": "{{baseUrl}}",
             "body": {
-              "mode": "raw",
-              "raw": "{\n  \"query\": \"query($pid: ID!) { tasks(projectId: $pid) { id title status assignee { email } } }\",\n  \"variables\": { \"pid\": \"{{projectId}}\" }\n}"
+              "mode": "graphql",
+              "graphql": {
+                "query": "query Tasks($pid: ID!) {\n  tasks(projectId: $pid) {\n    id\n    title\n    status\n    assignee { email }\n  }\n}",
+                "variables": "{\n  \"pid\": \"{{projectId}}\"\n}"
+              }
             }
           }
         },
@@ -272,8 +317,11 @@
             ],
             "url": "{{baseUrl}}",
             "body": {
-              "mode": "raw",
-              "raw": "{\n  \"query\": \"mutation($id: ID!, $input: UpdateTaskInput!) { updateTask(id: $id, input: $input) { id status } }\",\n  \"variables\": { \"id\": \"{{taskId}}\", \"input\": { \"status\": \"DONE\" } }\n}"
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation UpdateTask($id: ID!, $input: UpdateTaskInput!) {\n  updateTask(id: $id, input: $input) {\n    id\n    status\n  }\n}",
+                "variables": "{\n  \"id\": \"{{taskId}}\",\n  \"input\": { \"status\": \"DONE\" }\n}"
+              }
             }
           }
         },
@@ -287,8 +335,11 @@
             ],
             "url": "{{baseUrl}}",
             "body": {
-              "mode": "raw",
-              "raw": "{\n  \"query\": \"mutation($id: ID!) { deleteTask(id: $id) }\",\n  \"variables\": { \"id\": \"{{taskId}}\" }\n}"
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation DeleteTask($id: ID!) {\n  deleteTask(id: $id)\n}",
+                "variables": "{\n  \"id\": \"{{taskId}}\"\n}"
+              }
             }
           }
         }
@@ -303,11 +354,11 @@
             {
               "listen": "test",
               "script": {
+                "type": "text/javascript",
                 "exec": [
                   "const r = pm.response.json();",
                   "if (r.data && r.data.createComment) pm.collectionVariables.set('commentId', r.data.createComment.id);"
-                ],
-                "type": "text/javascript"
+                ]
               }
             }
           ],
@@ -319,8 +370,11 @@
             ],
             "url": "{{baseUrl}}",
             "body": {
-              "mode": "raw",
-              "raw": "{\n  \"query\": \"mutation($input: CreateCommentInput!) { createComment(input: $input) { id content author { email } } }\",\n  \"variables\": { \"input\": { \"projectId\": \"{{projectId}}\", \"content\": \"Great project!\" } }\n}"
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation CreateComment($input: CreateCommentInput!) {\n  createComment(input: $input) {\n    id\n    content\n    author { email }\n  }\n}",
+                "variables": "{\n  \"input\": {\n    \"projectId\": \"{{projectId}}\",\n    \"content\": \"Great project!\"\n  }\n}"
+              }
             }
           }
         },
@@ -334,8 +388,11 @@
             ],
             "url": "{{baseUrl}}",
             "body": {
-              "mode": "raw",
-              "raw": "{\n  \"query\": \"query($pid: ID!) { comments(projectId: $pid) { id content author { email } } }\",\n  \"variables\": { \"pid\": \"{{projectId}}\" }\n}"
+              "mode": "graphql",
+              "graphql": {
+                "query": "query Comments($pid: ID!) {\n  comments(projectId: $pid) {\n    id\n    content\n    author { email }\n  }\n}",
+                "variables": "{\n  \"pid\": \"{{projectId}}\"\n}"
+              }
             }
           }
         },
@@ -349,8 +406,11 @@
             ],
             "url": "{{baseUrl}}",
             "body": {
-              "mode": "raw",
-              "raw": "{\n  \"query\": \"mutation($id: ID!, $input: UpdateCommentInput!) { updateComment(id: $id, input: $input) { id content } }\",\n  \"variables\": { \"id\": \"{{commentId}}\", \"input\": { \"content\": \"Edited comment\" } }\n}"
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation UpdateComment($id: ID!, $input: UpdateCommentInput!) {\n  updateComment(id: $id, input: $input) {\n    id\n    content\n  }\n}",
+                "variables": "{\n  \"id\": \"{{commentId}}\",\n  \"input\": { \"content\": \"Edited comment\" }\n}"
+              }
             }
           }
         },
@@ -364,8 +424,11 @@
             ],
             "url": "{{baseUrl}}",
             "body": {
-              "mode": "raw",
-              "raw": "{\n  \"query\": \"mutation($id: ID!) { deleteComment(id: $id) }\",\n  \"variables\": { \"id\": \"{{commentId}}\" }\n}"
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation DeleteComment($id: ID!) {\n  deleteComment(id: $id)\n}",
+                "variables": "{\n  \"id\": \"{{commentId}}\"\n}"
+              }
             }
           }
         }
@@ -384,8 +447,11 @@
             ],
             "url": "{{baseUrl}}",
             "body": {
-              "mode": "raw",
-              "raw": "{\n  \"query\": \"mutation($id: ID!) { deleteProject(id: $id) }\",\n  \"variables\": { \"id\": \"{{projectId}}\" }\n}"
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation DeleteProject($id: ID!) {\n  deleteProject(id: $id)\n}",
+                "variables": "{\n  \"id\": \"{{projectId}}\"\n}"
+              }
             }
           }
         }

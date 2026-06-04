@@ -1,0 +1,73 @@
+// Prisma schema for the GraphQL Taller API.
+// Provider is SQLite for zero-config local dev and tests. To deploy on a
+// managed Postgres (Render/Railway/Neon) change provider to "postgresql"
+// and set DATABASE_URL to the connection string.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// NOTE: SQLite does not support native enums. Roles and task statuses are
+// stored as strings; valid values are enforced by the GraphQL enums (Role,
+// TaskStatus) and the Zod validation layer. Switching to Postgres later only
+// requires changing these back to enums.
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      String   @default("USER")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  projects     Project[] @relation("ProjectOwner")
+  comments     Comment[]
+  assignedTasks Task[]   @relation("TaskAssignee")
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  ownerId String
+  owner   User   @relation("ProjectOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+
+  tasks    Task[]
+  comments Comment[]
+}
+
+model Task {
+  id        String   @id @default(cuid())
+  title     String
+  status    String   @default("TODO")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  assigneeId String?
+  assignee   User?   @relation("TaskAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  authorId String
+  author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}

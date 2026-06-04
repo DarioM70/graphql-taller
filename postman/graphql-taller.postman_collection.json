@@ -1,0 +1,378 @@
+{
+  "info": {
+    "name": "GraphQL Taller API",
+    "description": "Colección Postman para la API GraphQL (usuarios, proyectos, tareas, comentarios). El request 'Login' o 'Register' guarda el token automáticamente en la variable {{token}} usada por el resto de requests.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:4000/graphql" },
+    { "key": "token", "value": "" },
+    { "key": "projectId", "value": "" },
+    { "key": "taskId", "value": "" },
+    { "key": "commentId", "value": "" },
+    { "key": "userId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register (first user = SUPERADMIN)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const r = pm.response.json();",
+                  "if (r.data && r.data.register) {",
+                  "  pm.collectionVariables.set('token', r.data.register.token);",
+                  "  pm.collectionVariables.set('userId', r.data.register.user.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"mutation Register($input: RegisterInput!) { register(input: $input) { token user { id name email role } } }\",\n  \"variables\": { \"input\": { \"name\": \"Super Admin\", \"email\": \"admin@taller.com\", \"password\": \"Admin123*\" } }\n}"
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const r = pm.response.json();",
+                  "if (r.data && r.data.login) {",
+                  "  pm.collectionVariables.set('token', r.data.login.token);",
+                  "  pm.collectionVariables.set('userId', r.data.login.user.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"mutation Login($input: LoginInput!) { login(input: $input) { token user { id email role } } }\",\n  \"variables\": { \"input\": { \"email\": \"admin@taller.com\", \"password\": \"Admin123*\" } }\n}"
+            }
+          }
+        },
+        {
+          "name": "Me",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{baseUrl}}",
+            "body": { "mode": "raw", "raw": "{\n  \"query\": \"{ me { id name email role } }\"\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "List users",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{baseUrl}}",
+            "body": { "mode": "raw", "raw": "{\n  \"query\": \"{ users { id name email role } }\"\n}" }
+          }
+        },
+        {
+          "name": "Create user (superadmin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{baseUrl}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"mutation($input: CreateUserInput!) { createUser(input: $input) { id email role } }\",\n  \"variables\": { \"input\": { \"name\": \"Regular User\", \"email\": \"user1@taller.com\", \"password\": \"User123*\", \"role\": \"USER\" } }\n}"
+            }
+          }
+        },
+        {
+          "name": "Update user (superadmin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{baseUrl}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"mutation($id: ID!, $input: UpdateUserInput!) { updateUser(id: $id, input: $input) { id name role } }\",\n  \"variables\": { \"id\": \"{{userId}}\", \"input\": { \"name\": \"Updated Name\" } }\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete user (superadmin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{baseUrl}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"mutation($id: ID!) { deleteUser(id: $id) }\",\n  \"variables\": { \"id\": \"{{userId}}\" }\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Projects",
+      "item": [
+        {
+          "name": "Create project",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const r = pm.response.json();",
+                  "if (r.data && r.data.createProject) pm.collectionVariables.set('projectId', r.data.createProject.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{baseUrl}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"mutation($input: CreateProjectInput!) { createProject(input: $input) { id name description owner { email } } }\",\n  \"variables\": { \"input\": { \"name\": \"My Project\", \"description\": \"Demo project\" } }\n}"
+            }
+          }
+        },
+        {
+          "name": "List projects",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{baseUrl}}",
+            "body": { "mode": "raw", "raw": "{\n  \"query\": \"{ projects { id name owner { email } tasks { title status } comments { content } } }\"\n}" }
+          }
+        },
+        {
+          "name": "Update project",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{baseUrl}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"mutation($id: ID!, $input: UpdateProjectInput!) { updateProject(id: $id, input: $input) { id name description } }\",\n  \"variables\": { \"id\": \"{{projectId}}\", \"input\": { \"name\": \"Renamed Project\" } }\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete project",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{baseUrl}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"mutation($id: ID!) { deleteProject(id: $id) }\",\n  \"variables\": { \"id\": \"{{projectId}}\" }\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tasks",
+      "item": [
+        {
+          "name": "Create task",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const r = pm.response.json();",
+                  "if (r.data && r.data.createTask) pm.collectionVariables.set('taskId', r.data.createTask.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{baseUrl}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"mutation($input: CreateTaskInput!) { createTask(input: $input) { id title status } }\",\n  \"variables\": { \"input\": { \"projectId\": \"{{projectId}}\", \"title\": \"Design schema\", \"status\": \"TODO\" } }\n}"
+            }
+          }
+        },
+        {
+          "name": "List tasks of project",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{baseUrl}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"query($pid: ID!) { tasks(projectId: $pid) { id title status assignee { email } } }\",\n  \"variables\": { \"pid\": \"{{projectId}}\" }\n}"
+            }
+          }
+        },
+        {
+          "name": "Update task",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{baseUrl}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"mutation($id: ID!, $input: UpdateTaskInput!) { updateTask(id: $id, input: $input) { id status } }\",\n  \"variables\": { \"id\": \"{{taskId}}\", \"input\": { \"status\": \"DONE\" } }\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete task",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{baseUrl}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"mutation($id: ID!) { deleteTask(id: $id) }\",\n  \"variables\": { \"id\": \"{{taskId}}\" }\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Comments",
+      "item": [
+        {
+          "name": "Create comment",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const r = pm.response.json();",
+                  "if (r.data && r.data.createComment) pm.collectionVariables.set('commentId', r.data.createComment.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{baseUrl}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"mutation($input: CreateCommentInput!) { createComment(input: $input) { id content author { email } } }\",\n  \"variables\": { \"input\": { \"projectId\": \"{{projectId}}\", \"content\": \"Great project!\" } }\n}"
+            }
+          }
+        },
+        {
+          "name": "List comments of project",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{baseUrl}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"query($pid: ID!) { comments(projectId: $pid) { id content author { email } } }\",\n  \"variables\": { \"pid\": \"{{projectId}}\" }\n}"
+            }
+          }
+        },
+        {
+          "name": "Update comment",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{baseUrl}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"mutation($id: ID!, $input: UpdateCommentInput!) { updateComment(id: $id, input: $input) { id content } }\",\n  \"variables\": { \"id\": \"{{commentId}}\", \"input\": { \"content\": \"Edited comment\" } }\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete comment",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{baseUrl}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"mutation($id: ID!) { deleteComment(id: $id) }\",\n  \"variables\": { \"id\": \"{{commentId}}\" }\n}"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

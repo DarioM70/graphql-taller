@@ -1,0 +1,76 @@
+# Operaciones de ejemplo para Apollo Sandbox (http://localhost:4000/graphql).
+# Recuerde agregar el header HTTP en Sandbox luego de hacer login:
+#   { "Authorization": "Bearer <token>" }
+
+# ---------- AUTH ----------
+mutation Register {
+  register(input: { name: "Ada Lovelace", email: "ada@taller.com", password: "Secret123*" }) {
+    token
+    user { id name email role }
+  }
+}
+
+mutation Login {
+  login(input: { email: "admin@taller.com", password: "Admin123*" }) {
+    token
+    user { id email role }
+  }
+}
+
+query Me {
+  me { id name email role }
+}
+
+# ---------- USERS (superadmin) ----------
+query Users {
+  users { id name email role }
+}
+
+mutation CreateUser {
+  createUser(input: { name: "Regular", email: "regular@taller.com", password: "User123*", role: USER }) {
+    id email role
+  }
+}
+
+# ---------- PROJECTS ----------
+mutation CreateProject {
+  createProject(input: { name: "Plataforma X", description: "Proyecto demo" }) {
+    id name owner { email }
+  }
+}
+
+query Projects {
+  projects {
+    id
+    name
+    owner { email }
+    tasks { title status assignee { email } }
+    comments { content author { email } }
+  }
+}
+
+# ---------- TASKS (reemplace PROJECT_ID) ----------
+mutation CreateTask {
+  createTask(input: { projectId: "PROJECT_ID", title: "Diseñar el esquema", status: TODO }) {
+    id title status
+  }
+}
+
+mutation UpdateTask {
+  updateTask(id: "TASK_ID", input: { status: DONE }) {
+    id status
+  }
+}
+
+# ---------- COMMENTS ----------
+mutation CreateComment {
+  createComment(input: { projectId: "PROJECT_ID", content: "¡Buen avance!" }) {
+    id content author { email }
+  }
+}
+
+query Comments {
+  comments(projectId: "PROJECT_ID") {
+    id content author { email }
+  }
+}
